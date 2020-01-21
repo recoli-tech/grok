@@ -1,0 +1,54 @@
+    
+version: 2.1
+
+defaults: &defaults
+  working_directory: /app
+  docker:
+    - image: circleci/golang:1.13
+commands:
+  autotag:
+    steps:
+      - run: |
+          make install-autotag
+jobs:
+  run-tests:
+    <<: *defaults
+    docker:
+    - image: circleci/golang:1.13
+    - image: mongo
+    - image: google/cloud-sdk
+      port: 8085:8085
+      command: gcloud beta emulators pubsub start --host-port 0.0.0.0:8085
+    steps:
+      - checkout
+      - run:
+          name: Run Rebase
+          command: make run-rebase
+      - run:
+          name: Build Package
+          command: make build-package
+      - run:
+          name: Run Tests
+          command: make run-tests
+  release-vesion:
+    <<: *defaults
+    steps:
+      - checkout
+      - autotag
+      - run:
+          name: Tag Git Version
+          command: make tag-version
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - run-tests
+
+      - release-vesion:
+          requires:
+            - run-tests
+          filters:
+            branches:
+              only:
+                - master

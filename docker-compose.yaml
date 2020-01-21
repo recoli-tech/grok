@@ -1,0 +1,24 @@
+version: '3'
+services:
+  mongo:
+    image: mongo
+    container_name: grok_mongo
+    ports:
+      - 27017:27017
+  pubsub:
+    image: google/cloud-sdk:latest
+    container_name: grok_pubsub
+    ports:
+      - 8085:8085
+    command: gcloud beta emulators pubsub start --host-port 0.0.0.0:8085
+  tests:
+    image: golang:1.13
+    container_name: grok_tests
+    network_mode: host
+    depends_on: 
+      - mongo
+      - pubsub
+    command: go test ./... -cover
+    working_dir: /app
+    volumes: 
+      - ./:/app
