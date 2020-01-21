@@ -36,7 +36,8 @@ func TestControllerTestSuite(t *testing.T) {
 func (s *ControllerTestSuite) SetupTest() {
 	container := &testContainer{}
 	s.assert = assert.New(s.T())
-	s.settings = settings.FromYAML("../tests/config.yaml")
+	s.settings = &settings.Settings{}
+	settings.FromYAML("../tests/config.yaml", s.settings)
 	s.server = server.New(
 		server.WithSettings(s.settings),
 		server.WithContainer(container))

@@ -26,7 +26,8 @@ func TestSubscriberTestSuite(t *testing.T) {
 
 func (s *SubscriberTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
-	s.settings = settings.FromYAML("../tests/config.yaml")
+	s.settings = &settings.Settings{}
+	settings.FromYAML("../tests/config.yaml", s.settings)
 	s.client = async.FakeClient(s.settings.GCP.PubSub.Endpoint)
 	s.producer = async.NewPubSubProducer(s.client)
 }

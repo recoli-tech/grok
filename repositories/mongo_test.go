@@ -21,7 +21,8 @@ func TestMongoTestSuite(t *testing.T) {
 
 func (s *MongoTestSuite) SetupSuite() {
 	s.assert = assert.New(s.T())
-	s.settings = settings.FromYAML("../tests/config.yaml")
+	s.settings = &settings.Settings{}
+	settings.FromYAML("../tests/config.yaml", s.settings)
 }
 
 func (s *MongoTestSuite) TestConnect() {

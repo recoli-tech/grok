@@ -21,7 +21,8 @@ func TestProducerTestSuite(t *testing.T) {
 
 func (s *ProducerTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
-	s.settings = settings.FromYAML("../tests/config.yaml")
+	s.settings = &settings.Settings{}
+	settings.FromYAML("../tests/config.yaml", s.settings)
 }
 
 func (s *ProducerTestSuite) TestPublish() {
