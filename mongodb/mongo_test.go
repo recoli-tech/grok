@@ -1,9 +1,9 @@
-package repositories_test
+package mongodb_test
 
 import (
 	"testing"
 
-	"github.com/raafvargas/grok/repositories"
+	"github.com/raafvargas/grok/mongodb"
 	"github.com/raafvargas/grok/settings"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -27,12 +27,12 @@ func (s *MongoTestSuite) SetupSuite() {
 
 func (s *MongoTestSuite) TestConnect() {
 	s.assert.NotPanics(func() {
-		repositories.NewMongoConnection(s.settings.Mongo.ConnectionString)
+		mongodb.NewMongoConnection(s.settings.Mongo.ConnectionString)
 	})
 }
 
 func (s *MongoTestSuite) TestConnectFail() {
 	s.assert.Panics(func() {
-		repositories.NewMongoConnection("nohost")
+		mongodb.NewMongoConnection("nohost")
 	})
 }

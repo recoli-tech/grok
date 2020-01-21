@@ -1,4 +1,4 @@
-package controllers_test
+package http_test
 
 import (
 	"net/http"
@@ -21,7 +21,7 @@ type ControllerTestSuite struct {
 
 type testContainer struct{}
 
-func (c *testContainer) Controllers() []controllers.Controller {
+func (c *testContainer) Controllers() []http.Controller {
 	return nil
 }
 

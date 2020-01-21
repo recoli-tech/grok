@@ -10,7 +10,6 @@ require (
 	github.com/go-playground/validator/v10 v10.1.0
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/google/go-cmp v0.4.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.4.2
@@ -18,7 +17,6 @@ require (
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
 	github.com/xdg/stringprep v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.2.1
-	golang.org/x/crypto v0.0.0-20200117160349-530e935923ad // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	google.golang.org/api v0.15.0
 	google.golang.org/grpc v1.26.0

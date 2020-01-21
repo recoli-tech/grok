@@ -1,9 +1,9 @@
 package container
 
-import "github.com/raafvargas/grok/controllers"
+import "github.com/raafvargas/grok/http"
 
 // Container ...
 type Container interface {
 	Close() error
-	Controllers() []controllers.Controller
+	Controllers() []http.Controller
 }
