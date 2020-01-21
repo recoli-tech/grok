@@ -45,8 +45,8 @@ workflows:
       # - run-tests
 
       - release-vesion:
-          requires:
-            - run-tests
+          # requires:
+          #   - run-tests
           filters:
             branches:
               only:
