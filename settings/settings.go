@@ -36,22 +36,14 @@ type GCPSettings struct {
 }
 
 // FromYAML ...
-func FromYAML(file string) *Settings {
+func FromYAML(file string, dist interface{}) error {
 	filename, _ := filepath.Abs(file)
 
 	data, err := ioutil.ReadFile(filename)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	settings := new(Settings)
-
-	err = yaml.Unmarshal(data, settings)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return settings
+	return yaml.Unmarshal(data, dist)
 }
