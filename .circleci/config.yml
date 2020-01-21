@@ -2,9 +2,7 @@
 version: 2.1
 
 defaults: &defaults
-  working_directory: /app
-  docker:
-    - image: circleci/golang:1.13
+  working_directory: /go/src/github.com/raafvargas/grok
 commands:
   autotag:
     steps:
@@ -30,6 +28,7 @@ jobs:
           name: Run Tests
           command: make run-tests
   release-vesion:
+    <<: *defaults
     docker:
     - image: circleci/golang:1.13
     steps:
@@ -43,7 +42,7 @@ workflows:
   version: 2
   build-deploy:
     jobs:
-      - run-tests
+      # - run-tests
 
       - release-vesion:
           requires:
