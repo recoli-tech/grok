@@ -1,6 +1,10 @@
     
 version: 2.1
 
+defaults: &defaults
+  working_directory: /app
+  docker:
+    - image: circleci/golang:1.13
 commands:
   autotag:
     steps:
@@ -8,38 +12,26 @@ commands:
           make install-autotag
 jobs:
   run-tests:
+    <<: *defaults
     docker:
-    - image: circleci/cci-demo-docker-primary:0.0.2
+    - image: circleci/golang:1.13
+    - image: mongo
+    - image: google/cloud-sdk
+      command: gcloud beta emulators pubsub start --host-port 0.0.0.0:8085
     steps:
       - checkout
-
-      - setup_remote_docker
-
       - run:
-          name: Install Docker client
-          command: |
-            set -x
-            VER="17.03.0-ce"
-            curl -L -o /tmp/docker-$VER.tgz https://get.docker.com/builds/Linux/x86_64/docker-$VER.tgz
-            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
-            mv /tmp/docker/* /usr/bin
-
+          name: Run Rebase
+          command: make run-rebase
       - run:
-          name: Install Docker Compose
-          command: |
-            set -x
-            curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-            chmod +x /usr/local/bin/docker-compose
-  
+          name: Build Package
+          command: make build-package
       - run:
-          name: Start container and verify it's working
-          command: |
-            set -x
-            docker-compose up tests
-
+          name: Run Tests
+          command: make run-tests
   release-vesion:
     docker:
-      - image: circleci/cci-demo-docker-primary:0.0.2
+    - image: circleci/golang:1.13
     steps:
       - checkout
       - autotag
