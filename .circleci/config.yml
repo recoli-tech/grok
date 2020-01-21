@@ -2,7 +2,7 @@
 version: 2.1
 
 defaults: &defaults
-  working_directory: /app
+  working_directory: /go/src/github.com/raafvargas/grok
   docker:
     - image: circleci/golang:1.13
 commands:
@@ -17,7 +17,6 @@ jobs:
     - image: circleci/golang:1.13
     - image: mongo
     - image: google/cloud-sdk
-      port: 8085:8085
       command: gcloud beta emulators pubsub start --host-port 0.0.0.0:8085
     steps:
       - checkout
@@ -32,6 +31,8 @@ jobs:
           command: make run-tests
   release-vesion:
     <<: *defaults
+    docker:
+      - image: circleci/golang:1.13
     steps:
       - checkout
       - autotag
