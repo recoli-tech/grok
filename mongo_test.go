@@ -1,10 +1,9 @@
-package mongodb_test
+package grok_test
 
 import (
 	"testing"
 
-	"github.com/raafvargas/grok/mongodb"
-	"github.com/raafvargas/grok/settings"
+	"github.com/raafvargas/grok"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -12,7 +11,7 @@ import (
 type MongoTestSuite struct {
 	suite.Suite
 	assert   *assert.Assertions
-	settings *settings.Settings
+	settings *grok.Settings
 }
 
 func TestMongoTestSuite(t *testing.T) {
@@ -21,18 +20,18 @@ func TestMongoTestSuite(t *testing.T) {
 
 func (s *MongoTestSuite) SetupSuite() {
 	s.assert = assert.New(s.T())
-	s.settings = &settings.Settings{}
-	settings.FromYAML("../tests/config.yaml", s.settings)
+	s.settings = &grok.Settings{}
+	grok.FromYAML("tests/config.yaml", s.settings)
 }
 
 func (s *MongoTestSuite) TestConnect() {
 	s.assert.NotPanics(func() {
-		mongodb.NewMongoConnection(s.settings.Mongo.ConnectionString)
+		grok.NewMongoConnection(s.settings.Mongo.ConnectionString)
 	})
 }
 
 func (s *MongoTestSuite) TestConnectFail() {
 	s.assert.Panics(func() {
-		mongodb.NewMongoConnection("nohost")
+		grok.NewMongoConnection("nohost")
 	})
 }

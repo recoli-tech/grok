@@ -1,4 +1,4 @@
-package server
+package grok
 
 import (
 	"context"
@@ -7,56 +7,51 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/raafvargas/grok/container"
-	"github.com/raafvargas/grok/middlewares"
-	"github.com/raafvargas/grok/settings"
-
 	"github.com/gin-gonic/gin"
-
 	"github.com/sirupsen/logrus"
 )
 
-// Server wraps API configurations.
-type Server struct {
+// API wraps API configurations.
+type API struct {
 	Engine *gin.Engine
 	router *gin.RouterGroup
 
 	cors      bool
-	settings  *settings.Settings
-	Container container.Container
+	settings  *Settings
+	Container Container
 }
 
-// Option wrapps all server configurations
-type Option func(server *Server)
+// APIOption wrapps all server configurations
+type APIOption func(server *API)
 
 func init() {
 	gin.SetMode("release")
 }
 
 // WithContainer adds a container to the server
-func WithContainer(c container.Container) Option {
-	return func(server *Server) {
+func WithContainer(c Container) APIOption {
+	return func(server *API) {
 		server.Container = c
 	}
 }
 
 // WithSettings sets server configurations
-func WithSettings(settings *settings.Settings) Option {
-	return func(server *Server) {
+func WithSettings(settings *Settings) APIOption {
+	return func(server *API) {
 		server.settings = settings
 	}
 }
 
 // WithCORS enables CORS
-func WithCORS() Option {
-	return func(server *Server) {
+func WithCORS() APIOption {
+	return func(server *API) {
 		server.cors = true
 	}
 }
 
 // New creates a new API server
-func New(opts ...Option) *Server {
-	server := &Server{}
+func New(opts ...APIOption) *API {
+	server := &API{}
 
 	for _, opt := range opts {
 		opt(server)
@@ -64,10 +59,10 @@ func New(opts ...Option) *Server {
 
 	server.Engine = gin.New()
 	server.Engine.Use(gin.Recovery())
-	server.Engine.Use(middlewares.Logging())
+	server.Engine.Use(LogMiddleware())
 
 	if server.cors {
-		server.Engine.Use(middlewares.CORS())
+		server.Engine.Use(CORS())
 	}
 
 	server.Engine.NoRoute(func(c *gin.Context) {
@@ -76,7 +71,7 @@ func New(opts ...Option) *Server {
 
 	server.router = server.Engine.Group("")
 
-	server.router.GET("/swagger", middlewares.Swagger(server.settings.API.Swagger))
+	server.router.GET("/swagger", Swagger(server.settings.API.Swagger))
 
 	for _, ctrl := range server.Container.Controllers() {
 		ctrl.RegisterRoutes(server.router)
@@ -86,7 +81,7 @@ func New(opts ...Option) *Server {
 }
 
 // Run starts the server.
-func (server *Server) Run() {
+func (server *API) Run() {
 	defer server.Container.Close()
 
 	srv := http.Server{

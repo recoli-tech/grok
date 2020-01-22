@@ -1,4 +1,4 @@
-package middlewares
+package grok
 
 import (
 	"bytes"
@@ -22,8 +22,8 @@ func (w *bodyLogWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-//Logging ...
-func Logging() gin.HandlerFunc {
+//LogMiddleware ...
+func LogMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer recovery()
 		defer c.Request.Body.Close()

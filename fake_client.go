@@ -1,4 +1,4 @@
-package async
+package grok
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc"
 )
 
-// FakeClient ...
-func FakeClient(endpoint string) *pubsub.Client {
+// FakePubSubClient ...
+func FakePubSubClient(endpoint string) *pubsub.Client {
 	conn, _ := grpc.Dial(endpoint, grpc.WithInsecure())
 
 	client, _ := pubsub.NewClient(

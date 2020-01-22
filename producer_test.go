@@ -1,10 +1,9 @@
-package async_test
+package grok_test
 
 import (
 	"testing"
 
-	"github.com/raafvargas/grok/async"
-	"github.com/raafvargas/grok/settings"
+	"github.com/raafvargas/grok"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -12,7 +11,7 @@ import (
 type ProducerTestSuite struct {
 	suite.Suite
 	assert   *assert.Assertions
-	settings *settings.Settings
+	settings *grok.Settings
 }
 
 func TestProducerTestSuite(t *testing.T) {
@@ -21,13 +20,13 @@ func TestProducerTestSuite(t *testing.T) {
 
 func (s *ProducerTestSuite) SetupTest() {
 	s.assert = assert.New(s.T())
-	s.settings = &settings.Settings{}
-	settings.FromYAML("../tests/config.yaml", s.settings)
+	s.settings = &grok.Settings{}
+	grok.FromYAML("tests/config.yaml", s.settings)
 }
 
 func (s *ProducerTestSuite) TestPublish() {
-	producer := async.NewPubSubProducer(
-		async.FakeClient(s.settings.GCP.PubSub.Endpoint))
+	producer := grok.NewPubSubProducer(
+		grok.FakePubSubClient(s.settings.GCP.PubSub.Endpoint))
 
 	err := producer.Publish("test-topic", map[string]interface{}{"ping": "pong"})
 

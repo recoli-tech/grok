@@ -1,4 +1,4 @@
-package async
+package grok
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Subscriber ...
-type Subscriber struct {
+// PubSubSubscriber ...
+type PubSubSubscriber struct {
 	client       *pubsub.Client
 	handler      func(interface{}) error
 	subscriberID string
@@ -19,12 +19,12 @@ type Subscriber struct {
 	handleType   reflect.Type
 }
 
-// SubscriberOption ...
-type SubscriberOption func(*Subscriber)
+// PubSubSubscriberOption ...
+type PubSubSubscriberOption func(*PubSubSubscriber)
 
-// NewSubscriber ...
-func NewSubscriber(opts ...SubscriberOption) *Subscriber {
-	subscriber := new(Subscriber)
+// NewPubSubSubscriber ...
+func NewPubSubSubscriber(opts ...PubSubSubscriberOption) *PubSubSubscriber {
+	subscriber := new(PubSubSubscriber)
 
 	for _, opt := range opts {
 		opt(subscriber)
@@ -34,42 +34,42 @@ func NewSubscriber(opts ...SubscriberOption) *Subscriber {
 }
 
 // WithClient ...
-func WithClient(c *pubsub.Client) SubscriberOption {
-	return func(s *Subscriber) {
+func WithClient(c *pubsub.Client) PubSubSubscriberOption {
+	return func(s *PubSubSubscriber) {
 		s.client = c
 	}
 }
 
 // WithHandler ...
-func WithHandler(h func(interface{}) error) SubscriberOption {
-	return func(s *Subscriber) {
+func WithHandler(h func(interface{}) error) PubSubSubscriberOption {
+	return func(s *PubSubSubscriber) {
 		s.handler = h
 	}
 }
 
-// WithSubscriberID ...
-func WithSubscriberID(id string) SubscriberOption {
-	return func(s *Subscriber) {
+// WithPubSubSubscriberID ...
+func WithPubSubSubscriberID(id string) PubSubSubscriberOption {
+	return func(s *PubSubSubscriber) {
 		s.subscriberID = id
 	}
 }
 
 // WithTopicID ...
-func WithTopicID(t string) SubscriberOption {
-	return func(s *Subscriber) {
+func WithTopicID(t string) PubSubSubscriberOption {
+	return func(s *PubSubSubscriber) {
 		s.topicID = t
 	}
 }
 
 // WithType ...
-func WithType(t reflect.Type) SubscriberOption {
-	return func(s *Subscriber) {
+func WithType(t reflect.Type) PubSubSubscriberOption {
+	return func(s *PubSubSubscriber) {
 		s.handleType = t
 	}
 }
 
 // Run ...
-func (s *Subscriber) Run(ctx context.Context) error {
+func (s *PubSubSubscriber) Run(ctx context.Context) error {
 	subscriber, err := createSubscriptionIfNotExists(s.client, s.subscriberID, s.topicID)
 
 	if err != nil {

@@ -1,4 +1,4 @@
-package utils
+package grok
 
 // ErrorMapping ...
 type ErrorMapping map[error]error

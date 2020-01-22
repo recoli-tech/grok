@@ -1,4 +1,4 @@
-package middlewares
+package grok
 
 import (
 	"io/ioutil"

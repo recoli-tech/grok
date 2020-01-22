@@ -1,39 +1,38 @@
-package http
+package grok
 
 import (
 	"net/http"
 	"reflect"
 
 	"github.com/gin-gonic/gin"
-	"github.com/raafvargas/grok/utils"
 )
 
-//Controller ...
-type Controller interface {
+//APIController ...
+type APIController interface {
 	RegisterRoutes(*gin.RouterGroup)
 }
 
 //BindingError ...
 func BindingError(context *gin.Context, err error) {
 	context.Error(err)
-	context.JSON(http.StatusBadRequest, utils.NewError(http.StatusBadRequest, err.Error()))
+	context.JSON(http.StatusBadRequest, NewError(http.StatusBadRequest, err.Error()))
 }
 
 //ResolveError ...
 func ResolveError(context *gin.Context, err error) {
 	context.Error(err)
 
-	if utils.DefaultErrorMapping.Exists(err) {
-		err = utils.DefaultErrorMapping.Get(err)
+	if DefaultErrorMapping.Exists(err) {
+		err = DefaultErrorMapping.Get(err)
 	}
 
-	if reflect.TypeOf(err) != reflect.TypeOf(&utils.Error{}) {
+	if reflect.TypeOf(err) != reflect.TypeOf(&Error{}) {
 		context.Status(http.StatusInternalServerError)
 		return
 	}
 
 	status := http.StatusBadRequest
-	message := err.(*utils.Error)
+	message := err.(*Error)
 
 	if message.Code != 0 {
 		status = message.Code

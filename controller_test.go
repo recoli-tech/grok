@@ -1,27 +1,25 @@
-package http_test
+package grok_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/raafvargas/grok/controllers"
-	"github.com/raafvargas/grok/server"
-	"github.com/raafvargas/grok/settings"
+	"github.com/raafvargas/grok"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
-type ControllerTestSuite struct {
+type APIControllerTestSuite struct {
 	suite.Suite
 	assert   *assert.Assertions
-	settings *settings.Settings
-	server   *server.Server
+	settings *grok.Settings
+	server   *grok.API
 }
 
 type testContainer struct{}
 
-func (c *testContainer) Controllers() []http.Controller {
+func (c *testContainer) Controllers() []grok.APIController {
 	return nil
 }
 
@@ -29,21 +27,21 @@ func (c *testContainer) Close() error {
 	return nil
 }
 
-func TestControllerTestSuite(t *testing.T) {
-	suite.Run(t, new(ControllerTestSuite))
+func TestAPIControllerTestSuite(t *testing.T) {
+	suite.Run(t, new(APIControllerTestSuite))
 }
 
-func (s *ControllerTestSuite) SetupTest() {
+func (s *APIControllerTestSuite) SetupTest() {
 	container := &testContainer{}
 	s.assert = assert.New(s.T())
-	s.settings = &settings.Settings{}
-	settings.FromYAML("../tests/config.yaml", s.settings)
-	s.server = server.New(
-		server.WithSettings(s.settings),
-		server.WithContainer(container))
+	s.settings = &grok.Settings{}
+	grok.FromYAML("tests/config.yaml", s.settings)
+	s.server = grok.New(
+		grok.WithSettings(s.settings),
+		grok.WithContainer(container))
 }
 
-func (s *ControllerTestSuite) TestNotFound() {
+func (s *APIControllerTestSuite) TestNotFound() {
 	req := httptest.NewRequest("GET", "/notfound", nil)
 	response := httptest.NewRecorder()
 
@@ -52,7 +50,7 @@ func (s *ControllerTestSuite) TestNotFound() {
 	s.assert.Equal(http.StatusNotFound, response.Code)
 }
 
-func (s *ControllerTestSuite) TestSwagger() {
+func (s *APIControllerTestSuite) TestSwagger() {
 	req := httptest.NewRequest("GET", "/swagger", nil)
 	response := httptest.NewRecorder()
 

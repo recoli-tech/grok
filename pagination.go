@@ -1,4 +1,4 @@
-package utils
+package grok
 
 // PaginationResult ...
 type PaginationResult struct {
