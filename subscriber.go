@@ -3,7 +3,9 @@ package grok
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"reflect"
+	"strconv"
 
 	"cloud.google.com/go/pubsub"
 
@@ -12,11 +14,14 @@ import (
 
 // PubSubSubscriber ...
 type PubSubSubscriber struct {
-	client       *pubsub.Client
-	handler      func(interface{}) error
-	subscriberID string
-	topicID      string
-	handleType   reflect.Type
+	client              *pubsub.Client
+	handler             func(interface{}) error
+	subscriberID        string
+	topicID             string
+	handleType          reflect.Type
+	maxRetries          int
+	producer            *PubSubProducer
+	maxRetriesAttribute string
 }
 
 // PubSubSubscriberOption ...
@@ -25,10 +30,14 @@ type PubSubSubscriberOption func(*PubSubSubscriber)
 // NewPubSubSubscriber ...
 func NewPubSubSubscriber(opts ...PubSubSubscriberOption) *PubSubSubscriber {
 	subscriber := new(PubSubSubscriber)
+	subscriber.maxRetries = 5
 
 	for _, opt := range opts {
 		opt(subscriber)
 	}
+
+	subscriber.maxRetriesAttribute = "retries"
+	subscriber.producer = NewPubSubProducer(subscriber.client)
 
 	return subscriber
 }
@@ -68,6 +77,13 @@ func WithType(t reflect.Type) PubSubSubscriberOption {
 	}
 }
 
+// WithMaxRetries - default 5
+func WithMaxRetries(maxRetries int) PubSubSubscriberOption {
+	return func(s *PubSubSubscriber) {
+		s.maxRetries = maxRetries
+	}
+}
+
 // Run ...
 func (s *PubSubSubscriber) Run(ctx context.Context) error {
 	subscriber, err := createSubscriptionIfNotExists(s.client, s.subscriberID, s.topicID)
@@ -96,7 +112,20 @@ func (s *PubSubSubscriber) Run(ctx context.Context) error {
 			logrus.WithError(err).
 				Errorf("error processing message %s", message.ID)
 
-			message.Nack()
+			switch s.getRetries(message) >= s.maxRetries {
+			case true:
+				if err := s.dlq(message, err); err != nil {
+					logrus.WithError(err).
+						Errorf("error sending message %s to dlq", message.ID)
+				}
+				break
+			case false:
+				if err := s.retry(message); err != nil {
+					logrus.WithError(err).
+						Errorf("error retrying message %s", message.ID)
+				}
+				break
+			}
 		}
 
 		message.Ack()
@@ -130,4 +159,45 @@ func createSubscriptionIfNotExists(client *pubsub.Client, subscriberID, topicID 
 		return nil, err
 	}
 	return subscriber, nil
+}
+
+func (s *PubSubSubscriber) retry(message *pubsub.Message) error {
+	retries := s.getRetries(message)
+	retries++
+
+	message.Attributes[s.maxRetriesAttribute] = strconv.Itoa(retries)
+
+	return s.producer.PublishWihAttribrutes(s.topicID, message.Data, message.Attributes)
+}
+
+func (s *PubSubSubscriber) dlq(message *pubsub.Message, e error) error {
+	dlq := fmt.Sprintf("%s_dlq", s.topicID)
+
+	logrus.Infof("sending message %s to %s", message.ID, dlq)
+
+	_, err := createTopicIfNotExists(s.client, dlq)
+
+	if err != nil {
+		return err
+	}
+
+	attributes := make(map[string]string)
+	attributes["error"] = e.Error()
+
+	return s.producer.PublishWihAttribrutes(dlq, message.Data, attributes)
+}
+
+func (s *PubSubSubscriber) getRetries(message *pubsub.Message) int {
+	if message.Attributes == nil {
+		message.Attributes = make(map[string]string)
+	}
+
+	retries := 0
+	attribute, ok := message.Attributes[s.maxRetriesAttribute]
+
+	if ok {
+		retries, _ = strconv.Atoi(attribute)
+	}
+
+	return retries
 }

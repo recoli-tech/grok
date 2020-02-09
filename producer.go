@@ -20,6 +20,11 @@ func NewPubSubProducer(client *pubsub.Client) *PubSubProducer {
 
 // Publish ...
 func (p *PubSubProducer) Publish(topicID string, data interface{}) error {
+	return p.PublishWihAttribrutes(topicID, data, nil)
+}
+
+// PublishWihAttribrutes ...
+func (p *PubSubProducer) PublishWihAttribrutes(topicID string, data interface{}, attributes map[string]string) error {
 	body, err := json.Marshal(data)
 
 	if err != nil {
@@ -36,6 +41,7 @@ func (p *PubSubProducer) Publish(topicID string, data interface{}) error {
 		Publish(context.Background(), &pubsub.Message{
 			Data:        body,
 			PublishTime: time.Now(),
+			Attributes:  attributes,
 		}).
 		Get(context.Background())
 
