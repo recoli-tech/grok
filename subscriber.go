@@ -102,7 +102,7 @@ func (s *PubSubSubscriber) Run(ctx context.Context) error {
 		if err != nil {
 			logrus.WithError(err).WithField("content", string(message.Data)).
 				Errorf("cannot unmarshal message %s", message.ID)
-			message.Nack()
+			message.Ack()
 			return
 		}
 
