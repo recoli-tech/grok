@@ -123,7 +123,7 @@ func (s *PubSubSubscriber) Run(ctx context.Context) error {
 				}
 				break
 			case false:
-				if err := s.retry(message); err != nil {
+				if err := s.retry(message, body); err != nil {
 					logrus.WithError(err).
 						Errorf("error retrying message %s", message.ID)
 				}
@@ -164,13 +164,13 @@ func createSubscriptionIfNotExists(client *pubsub.Client, subscriberID, topicID 
 	return subscriber, nil
 }
 
-func (s *PubSubSubscriber) retry(message *pubsub.Message) error {
+func (s *PubSubSubscriber) retry(message *pubsub.Message, body interface{}) error {
 	retries := s.getRetries(message)
 	retries++
 
 	message.Attributes[s.maxRetriesAttribute] = strconv.Itoa(retries)
 
-	return s.producer.PublishWihAttribrutes(s.topicID, message.Data, message.Attributes)
+	return s.producer.PublishWihAttribrutes(s.topicID, body, message.Attributes)
 }
 
 func (s *PubSubSubscriber) dlq(message *pubsub.Message, e error) error {

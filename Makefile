@@ -14,7 +14,7 @@ run-rebase:
 	git rebase -p master 2>/dev/null | grep "Your branch is up-to-date with 'origin/master'." || echo "\nPlease rebase your branch with master!"
 
 run-tests:
-	go test -failfast -timeout 30s -cover ./...
+	go test -failfast -cover ./...
 
 build-package:
 	go mod vendor
