@@ -16,8 +16,9 @@ type Settings struct {
 
 // APISettings ...
 type APISettings struct {
-	Host    string `yaml:"host"`
-	Swagger string `yaml:"swagger"`
+	Host    string   `yaml:"host"`
+	Swagger string   `yaml:"swagger"`
+	Auth    *APIAuth `yaml:"auth"`
 }
 
 // MongoSettings ...
@@ -33,6 +34,13 @@ type GCPSettings struct {
 		Fake     bool   `yaml:"fake"`
 		Endpoint string `yaml:"endpoint"`
 	} `yaml:"pubsub"`
+}
+
+// APIAuth ...
+type APIAuth struct {
+	Tenant   string   `yaml:"tenant"`
+	JWKS     string   `yaml:"jwks"`
+	Audience []string `yaml:"audience"`
 }
 
 // FromYAML ...
