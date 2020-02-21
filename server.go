@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/patrickmn/go-cache"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,9 +17,10 @@ type API struct {
 	Engine *gin.Engine
 	router *gin.RouterGroup
 
-	cors      bool
-	settings  *Settings
-	Container Container
+	cors           bool
+	settings       *Settings
+	authentication gin.HandlerFunc
+	Container      Container
 }
 
 // APIOption wrapps all server configurations
@@ -49,6 +51,13 @@ func WithCORS() APIOption {
 	}
 }
 
+// WithAuthentication ...
+func WithAuthentication(auth *APIAuth, cache *cache.Cache) APIOption {
+	return func(server *API) {
+		server.authentication = Authenticate(auth, cache)
+	}
+}
+
 // New creates a new API server
 func New(opts ...APIOption) *API {
 	server := &API{}
@@ -70,6 +79,10 @@ func New(opts ...APIOption) *API {
 	})
 
 	server.router = server.Engine.Group("")
+
+	if server.authentication != nil {
+		server.router.Use(server.authentication)
+	}
 
 	server.router.GET("/swagger", Swagger(server.settings.API.Swagger))
 

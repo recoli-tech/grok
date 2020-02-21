@@ -2,18 +2,30 @@ package grok
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/auth0-community/go-auth0"
 	"github.com/gin-gonic/gin"
+	"github.com/patrickmn/go-cache"
 
 	"gopkg.in/square/go-jose.v2"
 )
 
 // Authenticate ...
-func Authenticate(tenant, jwks string, audience []string) gin.HandlerFunc {
+func Authenticate(auth *APIAuth, cache *cache.Cache) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		client := auth0.NewJWKClient(auth0.JWKClientOptions{URI: jwks}, nil)
-		configuration := auth0.NewConfiguration(client, audience, tenant, jose.RS256)
+		jwt := c.Request.Header.Get("authorization")
+
+		if value, found := cache.Get(jwt); found {
+			for key, value := range value.(map[string]interface{}) {
+				c.Set(key, value)
+			}
+			c.Next()
+			return
+		}
+
+		client := auth0.NewJWKClient(auth0.JWKClientOptions{URI: auth.JWKS}, nil)
+		configuration := auth0.NewConfiguration(client, auth.Audience, auth.Tenant, jose.RS256)
 		validator := auth0.NewValidator(configuration, nil)
 
 		token, err := validator.ValidateRequest(c.Request)
@@ -32,10 +44,12 @@ func Authenticate(tenant, jwks string, audience []string) gin.HandlerFunc {
 		for key, value := range claims {
 			c.Set(key, value)
 		}
-	}
-}
 
-// AuthenticateWithConfig ...
-func AuthenticateWithConfig(auth *APIAuth) gin.HandlerFunc {
-	return Authenticate(auth.Tenant, auth.JWKS, auth.Audience)
+		if exp, ok := claims["exp"]; ok {
+			float := exp.(float64)
+			cache.Set(jwt, claims, time.Second*time.Duration(int64(float)))
+		}
+
+		c.Next()
+	}
 }
