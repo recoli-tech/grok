@@ -1,15 +1,22 @@
 package grok
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
 
-import "net/http"
+	"github.com/gin-gonic/gin"
+)
 
 // Authorize ...
 func Authorize(scope string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		permissions := c.GetStringSlice("permissions")
+		permissions, exists := c.Get("permissions")
 
-		for _, permission := range permissions {
+		if !exists {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+
+		for _, permission := range permissions.([]interface{}) {
 			if permission == scope {
 				c.Next()
 				return
