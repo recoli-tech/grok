@@ -12,15 +12,32 @@ import (
 )
 
 // Authenticate ...
-type Authenticate struct {
+type Authenticate interface {
+	Middleware() gin.HandlerFunc
+}
+
+// Auth0Authenticate ...
+type Auth0Authenticate struct {
 	memoryCache    *cache.Cache
 	auth           *APIAuth
 	auth0Validator *auth0.JWTValidator
 }
 
+// CreateAuthenticate ...
+func CreateAuthenticate(auth *APIAuth, cache *cache.Cache) Authenticate {
+	if auth.Fake {
+		return NewFakeAuthenticate(
+			auth.FakeConfig.Authenticated,
+			auth.FakeConfig.Claims,
+		)
+	}
+
+	return NewAuthenticate(auth, cache)
+}
+
 // NewAuthenticate ...
-func NewAuthenticate(auth *APIAuth, cache *cache.Cache) *Authenticate {
-	a := &Authenticate{auth: auth, memoryCache: cache}
+func NewAuthenticate(auth *APIAuth, cache *cache.Cache) Authenticate {
+	a := &Auth0Authenticate{auth: auth, memoryCache: cache}
 
 	a.auth0Validator = auth0.NewValidator(
 		auth0.NewConfiguration(
@@ -40,11 +57,11 @@ func NewAuthenticate(auth *APIAuth, cache *cache.Cache) *Authenticate {
 }
 
 // Middleware ...
-func (a *Authenticate) Middleware(auth *APIAuth, cache *cache.Cache) gin.HandlerFunc {
+func (a *Auth0Authenticate) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		jwt := c.Request.Header.Get("authorization")
 
-		if value, found := cache.Get(jwt); found {
+		if value, found := a.memoryCache.Get(jwt); found {
 			for key, value := range value.(map[string]interface{}) {
 				c.Set(key, value)
 			}
@@ -71,7 +88,7 @@ func (a *Authenticate) Middleware(auth *APIAuth, cache *cache.Cache) gin.Handler
 
 		if exp, ok := claims["exp"]; ok {
 			float := exp.(float64)
-			cache.Set(jwt, claims, time.Second*time.Duration(int64(float)))
+			a.memoryCache.Set(jwt, claims, time.Second*time.Duration(int64(float)))
 		}
 
 		c.Next()

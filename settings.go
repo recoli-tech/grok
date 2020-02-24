@@ -38,9 +38,17 @@ type GCPSettings struct {
 
 // APIAuth ...
 type APIAuth struct {
-	Tenant   string   `yaml:"tenant"`
-	JWKS     string   `yaml:"jwks"`
-	Audience []string `yaml:"audience"`
+	Fake       bool         `yaml:"fake"`
+	FakeConfig *FakeAPIAuth `yaml:"fake_config"`
+	Tenant     string       `yaml:"tenant"`
+	JWKS       string       `yaml:"jwks"`
+	Audience   []string     `yaml:"audience"`
+}
+
+// FakeAPIAuth ...
+type FakeAPIAuth struct {
+	Claims        map[string]interface{} `yaml:"claims"`
+	Authenticated bool                   `yaml:"authenticated"`
 }
 
 // FromYAML ...
