@@ -12,7 +12,35 @@ import (
 )
 
 // Authenticate ...
-func Authenticate(auth *APIAuth, cache *cache.Cache) gin.HandlerFunc {
+type Authenticate struct {
+	memoryCache    *cache.Cache
+	auth           *APIAuth
+	auth0Validator *auth0.JWTValidator
+}
+
+// NewAuthenticate ...
+func NewAuthenticate(auth *APIAuth, cache *cache.Cache) *Authenticate {
+	a := &Authenticate{auth: auth, memoryCache: cache}
+
+	a.auth0Validator = auth0.NewValidator(
+		auth0.NewConfiguration(
+			auth0.NewJWKClient(
+				auth0.JWKClientOptions{
+					URI: a.auth.JWKS,
+				},
+				nil),
+			a.auth.Audience,
+			a.auth.Tenant,
+			jose.RS256,
+		),
+		nil,
+	)
+
+	return a
+}
+
+// Middleware ...
+func (a *Authenticate) Middleware(auth *APIAuth, cache *cache.Cache) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		jwt := c.Request.Header.Get("authorization")
 
@@ -24,11 +52,7 @@ func Authenticate(auth *APIAuth, cache *cache.Cache) gin.HandlerFunc {
 			return
 		}
 
-		client := auth0.NewJWKClient(auth0.JWKClientOptions{URI: auth.JWKS}, nil)
-		configuration := auth0.NewConfiguration(client, auth.Audience, auth.Tenant, jose.RS256)
-		validator := auth0.NewValidator(configuration, nil)
-
-		token, err := validator.ValidateRequest(c.Request)
+		token, err := a.auth0Validator.ValidateRequest(c.Request)
 
 		if err != nil {
 			c.Error(err)
@@ -36,7 +60,7 @@ func Authenticate(auth *APIAuth, cache *cache.Cache) gin.HandlerFunc {
 		}
 
 		claims := make(map[string]interface{})
-		if err := validator.Claims(c.Request, token, &claims); err != nil {
+		if err := a.auth0Validator.Claims(c.Request, token, &claims); err != nil {
 			c.Error(err)
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
