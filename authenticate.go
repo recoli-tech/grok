@@ -2,6 +2,7 @@ package grok
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/auth0-community/go-auth0"
@@ -93,4 +94,16 @@ func (a *Auth0Authenticate) Middleware() gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+// GetSubFromContext removes auth0| prefix from sub
+func GetSubFromContext(ctx gin.Context) string {
+	sub := ctx.GetString("sub")
+	splited := strings.Split(sub, "|")
+
+	if len(splited) < 2 {
+		return sub
+	}
+
+	return splited[1]
 }
