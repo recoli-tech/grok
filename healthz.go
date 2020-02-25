@@ -6,27 +6,37 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 // Healthz ...
 type Healthz struct {
-	client *mongo.Client
-	checks []func(*Healthz) error
+	settings *Settings
+	checks   []func(*Healthz) error
 }
 
 // HealtzOption ...
 type HealtzOption func(*Healthz)
 
 // WithMongo ...
-func WithMongo(client *mongo.Client) HealtzOption {
+func WithMongo() HealtzOption {
 	return func(h *Healthz) {
-		h.client = client
 		h.checks = append(h.checks, func(healthz *Healthz) error {
-			return healthz.client.Ping(context.Background(), readpref.Primary())
+			client := NewMongoConnection(h.settings.Mongo.ConnectionString)
+			defer client.Disconnect(context.Background())
+
+			return client.Ping(context.Background(), readpref.Primary())
 		})
+	}
+}
+
+// WithHealthzSettings ...
+func WithHealthzSettings(s *Settings) HealtzOption {
+	return func(h *Healthz) {
+		h.settings = s
 	}
 }
 
@@ -40,6 +50,34 @@ func NewHealthz(options ...HealtzOption) *Healthz {
 	}
 
 	return h
+}
+
+// HTTPHealthz ...
+func HTTPHealthz(options ...HealtzOption) gin.HandlerFunc {
+	h := NewHealthz(options...)
+	return h.HTTP()
+}
+
+// ConsumerHealthz ...
+func ConsumerHealthz(settingsFlag string, options ...HealtzOption) func(cmd *cobra.Command, args []string) {
+	return func(cmd *cobra.Command, args []string) {
+		settings := new(Settings)
+		err := FromYAML(cmd.Flag(settingsFlag).Value.String(), settings)
+
+		if err != nil {
+			logrus.WithError(err).
+				Panic("error loading settings")
+		}
+
+		options = append(options, WithHealthzSettings(settings))
+
+		h := NewHealthz(options...)
+
+		if err := h.Healthz(); err != nil {
+			logrus.WithError(err).
+				Panic("health checke failed")
+		}
+	}
 }
 
 // Healthz ...
