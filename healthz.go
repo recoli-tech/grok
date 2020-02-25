@@ -61,7 +61,7 @@ func HTTPHealthz(options ...HealtzOption) gin.HandlerFunc {
 // ConsumerHealthz ...
 func ConsumerHealthz(settingsFlag string, options ...HealtzOption) func(cmd *cobra.Command, args []string) {
 	return func(cmd *cobra.Command, args []string) {
-		settings := new(Settings)
+		settings := map[string]*Settings{}
 		err := FromYAML(cmd.Flag(settingsFlag).Value.String(), settings)
 
 		if err != nil {
@@ -69,7 +69,7 @@ func ConsumerHealthz(settingsFlag string, options ...HealtzOption) func(cmd *cob
 				Panic("error loading settings")
 		}
 
-		options = append(options, WithHealthzSettings(settings))
+		options = append(options, WithHealthzSettings(settings["grok"]))
 
 		h := NewHealthz(options...)
 
