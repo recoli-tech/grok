@@ -12,6 +12,11 @@ import (
 	"gopkg.in/square/go-jose.v2"
 )
 
+const (
+	// AuthClaimNamespace ...
+	AuthClaimNamespace = "https://api.recoli.com.br/"
+)
+
 // Authenticate ...
 type Authenticate interface {
 	Middleware() gin.HandlerFunc
@@ -84,6 +89,10 @@ func (a *Auth0Authenticate) Middleware() gin.HandlerFunc {
 		}
 
 		for key, value := range claims {
+			if strings.Index(key, AuthClaimNamespace) >= 0 {
+				key = strings.Replace(key, AuthClaimNamespace, "", -1)
+			}
+
 			c.Set(key, value)
 		}
 
@@ -106,4 +115,18 @@ func GetSubFromContext(ctx gin.Context) string {
 	}
 
 	return splited[1]
+}
+
+// RequiredClaims ...
+func RequiredClaims(claims ...string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		for _, c := range claims {
+			if _, exists := ctx.Get(c); !exists {
+				ctx.AbortWithStatus(http.StatusForbidden)
+				return
+			}
+		}
+
+		ctx.Next()
+	}
 }
