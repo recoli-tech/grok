@@ -18,6 +18,7 @@ type API struct {
 
 	cors     bool
 	settings *Settings
+	healthz  gin.HandlerFunc
 	handlers []gin.HandlerFunc
 
 	Container Container
@@ -58,6 +59,13 @@ func WithBaseHandler(h gin.HandlerFunc) APIOption {
 	}
 }
 
+// WithHealthz add a healthz handler
+func WithHealthz(h gin.HandlerFunc) APIOption {
+	return func(server *API) {
+		server.healthz = h
+	}
+}
+
 // New creates a new API server
 func New(opts ...APIOption) *API {
 	server := &API{}
@@ -80,6 +88,10 @@ func New(opts ...APIOption) *API {
 	})
 
 	server.router = server.Engine.Group("")
+
+	if server.healthz != nil {
+		server.router.GET("/healthz", server.healthz)
+	}
 
 	server.router.GET("/swagger", Swagger(server.settings.API.Swagger))
 
