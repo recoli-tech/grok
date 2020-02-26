@@ -67,10 +67,8 @@ func (a *Auth0Authenticate) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		jwt := c.Request.Header.Get("authorization")
 
-		if value, found := a.memoryCache.Get(jwt); found {
-			for key, value := range value.(map[string]interface{}) {
-				c.Set(key, value)
-			}
+		if claims, found := a.memoryCache.Get(jwt); found {
+			a.setKeys(c, claims.(map[string]interface{}))
 			c.Next()
 			return
 		}
@@ -88,13 +86,7 @@ func (a *Auth0Authenticate) Middleware() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 
-		for key, value := range claims {
-			if strings.Index(key, AuthClaimNamespace) >= 0 {
-				key = strings.Replace(key, AuthClaimNamespace, "", -1)
-			}
-
-			c.Set(key, value)
-		}
+		a.setKeys(c, claims)
 
 		if exp, ok := claims["exp"]; ok {
 			float := exp.(float64)
@@ -102,6 +94,16 @@ func (a *Auth0Authenticate) Middleware() gin.HandlerFunc {
 		}
 
 		c.Next()
+	}
+}
+
+func (a *Auth0Authenticate) setKeys(ctx *gin.Context, claims map[string]interface{}) {
+	for key, value := range claims {
+		if strings.Index(key, AuthClaimNamespace) >= 0 {
+			key = strings.Replace(key, AuthClaimNamespace, "", -1)
+		}
+
+		ctx.Set(key, value)
 	}
 }
 
