@@ -39,7 +39,7 @@ type GCPSettings struct {
 		Fake     bool   `yaml:"fake"`
 		Bucket   string `yaml:"bucket"`
 		Endpoint string `yaml:"endpoint"`
-	} `yaml:"pubsub"`
+	} `yaml:"storage"`
 }
 
 // APIAuth ...
