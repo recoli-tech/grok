@@ -23,15 +23,17 @@ func createAuth0Provider(settings *Settings) Provider {
 		time.Duration(settings.UserProvider.Auth0.CacheTTL)*time.Minute,
 		10*time.Second)
 
+	clientID := settings.UserProvider.Auth0.ClientID
 	clientSecret := settings.UserProvider.Auth0.ClientSecret
 
-	if settings.UserProvider.Auth0.ClientSecretFrom == "environment" {
+	if settings.UserProvider.Auth0.ClientFrom == "environment" {
+		clientID = os.Getenv(settings.UserProvider.Auth0.ClientIDEnv)
 		clientSecret = os.Getenv(settings.UserProvider.Auth0.ClientSecretEnv)
 	}
 
 	management, _ := management.New(
 		settings.UserProvider.Auth0.Domain,
-		settings.UserProvider.Auth0.ClientID,
+		clientID,
 		clientSecret,
 	)
 

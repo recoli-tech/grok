@@ -57,12 +57,13 @@ type UserProvider struct {
 	Kind  string                   `yaml:"kind"`
 	Mock  []map[string]interface{} `yaml:"users"`
 	Auth0 struct {
-		CacheTTL         int64  `yaml:"cache_ttl"`
-		Domain           string `yaml:"domain"`
-		ClientSecretFrom string `yaml:"client_secret_from"`
-		ClientID         string `yaml:"client_id"`
-		ClientSecret     string `yaml:"client_secret"`
-		ClientSecretEnv  string `yaml:"client_secret_env"`
+		CacheTTL        int64  `yaml:"cache_ttl"`
+		Domain          string `yaml:"domain"`
+		ClientFrom      string `yaml:"client_from"`
+		ClientID        string `yaml:"client_id"`
+		ClientSecret    string `yaml:"client_secret"`
+		ClientIDEnv     string `yaml:"client_id_env"`
+		ClientSecretEnv string `yaml:"client_secret_env"`
 	}
 }
 
