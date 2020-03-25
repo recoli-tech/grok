@@ -9,9 +9,10 @@ import (
 
 //Settings ...
 type Settings struct {
-	API   *APISettings   `yaml:"api"`
-	Mongo *MongoSettings `yaml:"mongo"`
-	GCP   *GCPSettings   `yaml:"gcp"`
+	API          *APISettings   `yaml:"api"`
+	Mongo        *MongoSettings `yaml:"mongo"`
+	GCP          *GCPSettings   `yaml:"gcp"`
+	UserProvider *UserProvider  `yaml:"user_provider"`
 }
 
 // APISettings ...
@@ -49,6 +50,20 @@ type APIAuth struct {
 type FakeAPIAuth struct {
 	Claims        map[string]interface{} `yaml:"claims"`
 	Authenticated bool                   `yaml:"authenticated"`
+}
+
+// UserProvider ...
+type UserProvider struct {
+	Kind  string                   `yaml:"kind"`
+	Mock  []map[string]interface{} `yaml:"users"`
+	Auth0 struct {
+		CacheTTL         int64  `yaml:"cache_ttl"`
+		Domain           string `yaml:"domain"`
+		ClientSecretFrom string `yaml:"client_secret_from"`
+		ClientID         string `yaml:"client_id"`
+		ClientSecret     string `yaml:"client_secret"`
+		ClientSecretEnv  string `yaml:"client_secret_env"`
+	}
 }
 
 // FromYAML ...

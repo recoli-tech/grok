@@ -21,6 +21,8 @@ require (
 	go.mongodb.org/mongo-driver v1.2.1
 	google.golang.org/api v0.15.0
 	google.golang.org/grpc v1.26.0
+	gopkg.in/auth0.v1 v1.3.0
+	gopkg.in/auth0.v3 v3.3.1
 	gopkg.in/square/go-jose.v2 v2.4.1
 	gopkg.in/yaml.v2 v2.2.7
 )
