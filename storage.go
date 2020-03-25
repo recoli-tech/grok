@@ -13,7 +13,7 @@ import (
 // CreateStorageClient ...
 func CreateStorageClient(settings *GCPSettings) *storage.Client {
 	switch {
-	case settings.Fake:
+	case settings.Storage.Fake:
 		return FakeStorageClient(settings)
 	default:
 		client, err := storage.NewClient(context.Background())
