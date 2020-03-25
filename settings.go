@@ -31,8 +31,12 @@ type MongoSettings struct {
 // GCPSettings ...
 type GCPSettings struct {
 	ProjectID string `yaml:"project_id"`
+	Fake      bool   `yaml:"fake"`
 	PubSub    struct {
-		Fake     bool   `yaml:"fake"`
+		Endpoint string `yaml:"endpoint"`
+	} `yaml:"pubsub"`
+	Storage struct {
+		Bucket   string `yaml:"bucket"`
 		Endpoint string `yaml:"endpoint"`
 	} `yaml:"pubsub"`
 }

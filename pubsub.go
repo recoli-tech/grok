@@ -10,7 +10,7 @@ import (
 // CreatePubSubClient ...
 func CreatePubSubClient(settings *GCPSettings) *pubsub.Client {
 	switch {
-	case settings.PubSub.Fake:
+	case settings.Fake:
 		return FakePubSubClient(settings.PubSub.Endpoint)
 	default:
 		pubsub, err := pubsub.NewClient(context.Background(), settings.ProjectID)

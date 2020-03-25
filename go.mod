@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	cloud.google.com/go/pubsub v1.1.0
+	cloud.google.com/go/storage v1.0.0
 	github.com/DataDog/zstd v1.4.4 // indirect
 	github.com/auth0-community/go-auth0 v1.0.0
 	github.com/gin-gonic/gin v1.5.0
