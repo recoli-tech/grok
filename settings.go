@@ -13,6 +13,7 @@ type Settings struct {
 	Mongo        *MongoSettings `yaml:"mongo"`
 	GCP          *GCPSettings   `yaml:"gcp"`
 	UserProvider *UserProvider  `yaml:"user_provider"`
+	Mail         *MailSettings  `yaml:"mail"`
 }
 
 // APISettings ...
@@ -70,6 +71,19 @@ type UserProvider struct {
 		ClientIDEnv     string `yaml:"client_id_env"`
 		ClientSecretEnv string `yaml:"client_secret_env"`
 	}
+}
+
+// MailSettings ...
+type MailSettings struct {
+	Provider string `yaml:"provider"`
+	Fake     struct {
+		ShouldReturnError bool `yaml:"should_return_error"`
+	} `yaml:"fake"`
+	SendGrid struct {
+		APIKey    string `yaml:"api_key"`
+		FromEnv   bool   `yaml:"from_env"`
+		APIKeyEnv string `yaml:"api_key_env"`
+	} `yaml:"send_grid"`
 }
 
 // FromYAML ...
