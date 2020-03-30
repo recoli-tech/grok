@@ -14,14 +14,15 @@ import (
 
 // PubSubSubscriber ...
 type PubSubSubscriber struct {
-	client              *pubsub.Client
-	handler             func(interface{}) error
-	subscriberID        string
-	topicID             string
-	handleType          reflect.Type
-	maxRetries          int
-	producer            *PubSubProducer
-	maxRetriesAttribute string
+	client                 *pubsub.Client
+	handler                func(interface{}) error
+	subscriberID           string
+	topicID                string
+	handleType             reflect.Type
+	maxRetries             int
+	producer               *PubSubProducer
+	maxRetriesAttribute    string
+	maxOutstandingMessages int
 }
 
 // PubSubSubscriberOption ...
@@ -31,6 +32,7 @@ type PubSubSubscriberOption func(*PubSubSubscriber)
 func NewPubSubSubscriber(opts ...PubSubSubscriberOption) *PubSubSubscriber {
 	subscriber := new(PubSubSubscriber)
 	subscriber.maxRetries = 5
+	subscriber.maxOutstandingMessages = pubsub.DefaultReceiveSettings.MaxOutstandingMessages
 
 	for _, opt := range opts {
 		opt(subscriber)
@@ -84,9 +86,17 @@ func WithMaxRetries(maxRetries int) PubSubSubscriberOption {
 	}
 }
 
+//WitMaxOutstandingMessages ...
+func WitMaxOutstandingMessages(maxOutstandingMessages int) PubSubSubscriberOption {
+	return func(s *PubSubSubscriber) {
+		s.maxOutstandingMessages = maxOutstandingMessages
+	}
+}
+
 // Run ...
 func (s *PubSubSubscriber) Run(ctx context.Context) error {
 	subscriber, err := createSubscriptionIfNotExists(s.client, s.subscriberID, s.topicID)
+	subscriber.ReceiveSettings.MaxOutstandingMessages = s.maxOutstandingMessages
 
 	if err != nil {
 		logrus.WithError(err).
