@@ -52,12 +52,11 @@ func NewSendGridMailProvider(apiKey string) MailProvider {
 }
 
 func (s *sendGridProvider) Send(m *Mail) error {
-	message := mail.NewSingleEmail(
+	message := mail.NewV3MailInit(
 		mail.NewEmail("", m.MailFrom),
 		m.Subject,
 		mail.NewEmail("", m.MailTo),
-		m.PlainText,
-		m.HTML,
+		mail.NewContent("text/plain", m.PlainText),
 	)
 
 	res, err := s.client.Send(message)
