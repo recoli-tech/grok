@@ -65,7 +65,7 @@ func (s *sendGridProvider) Send(m *Mail) error {
 		return err
 	}
 
-	if res.StatusCode != http.StatusOK {
+	if res.StatusCode != http.StatusAccepted {
 		logrus.
 			WithField("response", res).
 			Error("sendgrid api error")
