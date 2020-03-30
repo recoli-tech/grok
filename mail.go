@@ -8,6 +8,7 @@ import (
 
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"github.com/sirupsen/logrus"
 )
 
 // Mail ...
@@ -66,7 +67,11 @@ func (s *sendGridProvider) Send(m *Mail) error {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return fmt.Errorf("error sending mail to %s:\n%s", m.MailTo, m.PlainText)
+		logrus.
+			WithField("response", res).
+			Error("sendgrid api error")
+
+		return fmt.Errorf("error sending mail to %s:\n\n%s", m.MailTo, m.PlainText)
 	}
 
 	return nil
