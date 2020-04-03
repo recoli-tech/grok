@@ -7,6 +7,9 @@ require (
 	cloud.google.com/go/storage v1.0.0
 	github.com/DataDog/zstd v1.4.4 // indirect
 	github.com/auth0-community/go-auth0 v1.0.0
+	github.com/aybabtme/iocontrol v0.0.0-20150809002002-ad15bcfc95a0 // indirect
+	github.com/benbjohnson/clock v1.0.0 // indirect
+	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-playground/validator/v10 v10.1.0
 	github.com/golang/snappy v0.0.1 // indirect
@@ -22,7 +25,6 @@ require (
 	go.mongodb.org/mongo-driver v1.2.1
 	google.golang.org/api v0.15.0
 	google.golang.org/grpc v1.26.0
-	gopkg.in/auth0.v1 v1.3.0
 	gopkg.in/auth0.v3 v3.3.1
 	gopkg.in/square/go-jose.v2 v2.4.1
 	gopkg.in/yaml.v2 v2.2.7
