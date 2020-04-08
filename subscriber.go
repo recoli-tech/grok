@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"time"
 
 	"cloud.google.com/go/pubsub"
 
@@ -23,6 +24,7 @@ type PubSubSubscriber struct {
 	producer               *PubSubProducer
 	maxRetriesAttribute    string
 	maxOutstandingMessages int
+	ackDeadline            time.Duration
 }
 
 // PubSubSubscriberOption ...
@@ -33,6 +35,7 @@ func NewPubSubSubscriber(opts ...PubSubSubscriberOption) *PubSubSubscriber {
 	subscriber := new(PubSubSubscriber)
 	subscriber.maxRetries = 5
 	subscriber.maxOutstandingMessages = pubsub.DefaultReceiveSettings.MaxOutstandingMessages
+	subscriber.ackDeadline = 10 * time.Second
 
 	for _, opt := range opts {
 		opt(subscriber)
@@ -86,16 +89,23 @@ func WithMaxRetries(maxRetries int) PubSubSubscriberOption {
 	}
 }
 
-//WitMaxOutstandingMessages ...
-func WitMaxOutstandingMessages(maxOutstandingMessages int) PubSubSubscriberOption {
+//WithMaxOutstandingMessages ...
+func WithMaxOutstandingMessages(maxOutstandingMessages int) PubSubSubscriberOption {
 	return func(s *PubSubSubscriber) {
 		s.maxOutstandingMessages = maxOutstandingMessages
 	}
 }
 
+//WithAckDeadline ...
+func WithAckDeadline(t time.Duration) PubSubSubscriberOption {
+	return func(s *PubSubSubscriber) {
+		s.ackDeadline = t
+	}
+}
+
 // Run ...
 func (s *PubSubSubscriber) Run(ctx context.Context) error {
-	subscriber, err := createSubscriptionIfNotExists(s.client, s.subscriberID, s.topicID)
+	subscriber, err := createSubscriptionIfNotExists(s.client, s.subscriberID, s.topicID, s.ackDeadline)
 	subscriber.ReceiveSettings.MaxOutstandingMessages = s.maxOutstandingMessages
 
 	if err != nil {
@@ -145,7 +155,7 @@ func (s *PubSubSubscriber) Run(ctx context.Context) error {
 	})
 }
 
-func createSubscriptionIfNotExists(client *pubsub.Client, subscriberID, topicID string) (*pubsub.Subscription, error) {
+func createSubscriptionIfNotExists(client *pubsub.Client, subscriberID, topicID string, ackDeadline time.Duration) (*pubsub.Subscription, error) {
 	subscriber := client.Subscription(subscriberID)
 
 	exists, err := subscriber.Exists(context.Background())
@@ -163,7 +173,8 @@ func createSubscriptionIfNotExists(client *pubsub.Client, subscriberID, topicID 
 	}
 
 	subscriber, err = client.CreateSubscription(context.Background(), subscriberID, pubsub.SubscriptionConfig{
-		Topic: topic,
+		Topic:       topic,
+		AckDeadline: ackDeadline,
 	})
 
 	if err != nil {
