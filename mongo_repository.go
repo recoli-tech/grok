@@ -13,7 +13,8 @@ import (
 type MongoRepository struct {
 	idProperty   string
 	documentType reflect.Type
-	collection   *mongo.Collection
+
+	Collection *mongo.Collection
 }
 
 // NewMongoRepository ...
@@ -21,13 +22,13 @@ func NewMongoRepository(idProperty string, documentType reflect.Type, collection
 	return &MongoRepository{
 		idProperty:   idProperty,
 		documentType: documentType,
-		collection:   collection,
+		Collection:   collection,
 	}
 }
 
 // Insert ...
 func (r *MongoRepository) Insert(ctx context.Context, document interface{}) (interface{}, error) {
-	result, err := r.collection.InsertOne(ctx, document)
+	result, err := r.Collection.InsertOne(ctx, document)
 
 	if err != nil {
 		return nil, err
@@ -47,7 +48,7 @@ func (r *MongoRepository) Insert(ctx context.Context, document interface{}) (int
 
 // Update ...
 func (r *MongoRepository) Update(ctx context.Context, id interface{}, document interface{}) error {
-	_, err := r.collection.UpdateOne(ctx, bson.M{
+	_, err := r.Collection.UpdateOne(ctx, bson.M{
 		"_id": id,
 	}, bson.M{"$set": document})
 
@@ -58,7 +59,7 @@ func (r *MongoRepository) Update(ctx context.Context, id interface{}, document i
 func (r *MongoRepository) FindByID(ctx context.Context, id interface{}) (interface{}, error) {
 	doc := reflect.New(r.documentType).Interface()
 
-	err := r.collection.FindOne(ctx, bson.M{
+	err := r.Collection.FindOne(ctx, bson.M{
 		"_id": id,
 	}).Decode(doc)
 
