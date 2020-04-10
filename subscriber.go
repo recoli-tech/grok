@@ -129,6 +129,17 @@ func (s *PubSubSubscriber) Run(ctx context.Context) error {
 			return
 		}
 
+		defer func() {
+			if recover(); err != nil {
+				logrus.WithField("error", err).WithField("content", string(message.Data)).
+					Warnf("consumer panicked with message %s - sending to dlq", message.ID)
+
+				s.dlq(message, err)
+
+				message.Ack()
+			}
+		}()
+
 		err = s.handler(body)
 
 		if err != nil {
