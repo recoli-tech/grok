@@ -28,7 +28,7 @@ func ensureStoreByKind(kind string, paramName string) gin.HandlerFunc {
 			value = c.Query(paramName)
 		}
 
-		if err := ensureStore(c, value); err != nil {
+		if err := EnsureStore(c, value); err != nil {
 			c.Error(err)
 			c.AbortWithStatus(http.StatusForbidden)
 			return
@@ -38,7 +38,8 @@ func ensureStoreByKind(kind string, paramName string) gin.HandlerFunc {
 	}
 }
 
-func ensureStore(ctx *gin.Context, storeID string) error {
+// EnsureStore ...
+func EnsureStore(ctx *gin.Context, storeID string) error {
 	value, exists := ctx.Get("stores")
 
 	if !exists || value == nil {
