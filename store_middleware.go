@@ -5,22 +5,20 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 // EnsureStoreFromPath ...
-func EnsureStoreFromPath(provider Provider, paramName string) gin.HandlerFunc {
-	return ensureStoreByKind("path", provider, paramName)
+func EnsureStoreFromPath(paramName string) gin.HandlerFunc {
+	return ensureStoreByKind("path", paramName)
 }
 
 // EnsureStoreFromQuery ...
-func EnsureStoreFromQuery(provider Provider, paramName string) gin.HandlerFunc {
-	return ensureStoreByKind("query", provider, paramName)
+func EnsureStoreFromQuery(paramName string) gin.HandlerFunc {
+	return ensureStoreByKind("query", paramName)
 }
 
-func ensureStoreByKind(kind string, provider Provider, paramName string) gin.HandlerFunc {
+func ensureStoreByKind(kind string, paramName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userID := c.GetString("sub")
 		value := ""
 
 		switch kind {
@@ -30,7 +28,8 @@ func ensureStoreByKind(kind string, provider Provider, paramName string) gin.Han
 			value = c.Query(paramName)
 		}
 
-		if err := ensureStore(provider, userID, value); err != nil {
+		if err := ensureStore(c, value); err != nil {
+			c.Error(err)
 			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
@@ -39,17 +38,21 @@ func ensureStoreByKind(kind string, provider Provider, paramName string) gin.Han
 	}
 }
 
-func ensureStore(provider Provider, userID, storeID string) error {
-	user, err := provider.Fetch(userID)
+func ensureStore(ctx *gin.Context, storeID string) error {
+	value, exists := ctx.Get("stores")
 
-	if err != nil {
-		logrus.WithError(err).
-			Error("error fetching user data")
-		return err
+	if !exists || value == nil {
+		return errors.New("stores parameter not found in user claims")
 	}
 
-	for _, store := range user.Stores {
-		if store == storeID {
+	slice, ok := value.([]interface{})
+
+	if !ok {
+		return errors.New("stores parameter not found in user claims")
+	}
+
+	for _, store := range slice {
+		if s, ok := store.(string); ok && s == storeID {
 			return nil
 		}
 	}
