@@ -103,12 +103,16 @@ func (a *Auth0Authenticate) setKeys(ctx *gin.Context, claims map[string]interfac
 			key = strings.Replace(key, AuthClaimNamespace, "", -1)
 		}
 
+		if key == "sub" {
+			value = getSubFromContext(*ctx)
+		}
+
 		ctx.Set(key, value)
 	}
 }
 
-// GetSubFromContext removes auth0| prefix from sub
-func GetSubFromContext(ctx gin.Context) string {
+// getSubFromContext removes auth0| prefix from sub
+func getSubFromContext(ctx gin.Context) string {
 	sub := ctx.GetString("sub")
 	splited := strings.Split(sub, "|")
 
