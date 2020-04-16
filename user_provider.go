@@ -2,6 +2,7 @@ package grok
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/patrickmn/go-cache"
 	"gopkg.in/auth0.v3/management"
@@ -39,15 +40,20 @@ func (p *auth0Provider) Fetch(id string) (*User, error) {
 		return user.(*User), nil
 	}
 
-	user := new(User)
-	user.ID = id
-
-	auth0User, err := p.auth0Management.User.Read(id)
+	list, err := p.auth0Management.User.Search(
+		management.Parameter("q", fmt.Sprintf("user_id:*%s*", id)))
 
 	if err != nil {
 		return nil, err
 	}
 
+	if list.Length <= 0 {
+		return nil, errors.New("user not found")
+	}
+
+	auth0User := list.Users[0]
+	user := new(User)
+	user.ID = id
 	user.Email = auth0User.GetEmail()
 	value, ok := auth0User.UserMetadata["stores"]
 
