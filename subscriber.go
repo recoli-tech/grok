@@ -140,6 +140,10 @@ func (s *PubSubSubscriber) Run(ctx context.Context) error {
 			}
 		}()
 
+		started := time.Now()
+
+		logrus.Infof("processing message %s", message.ID)
+
 		err = s.handler(body)
 
 		if err != nil {
@@ -161,6 +165,10 @@ func (s *PubSubSubscriber) Run(ctx context.Context) error {
 				break
 			}
 		}
+
+		logrus.
+			WithField("elapsed", time.Since(started)).
+			Infof("sending ack to message %s", message.ID)
 
 		message.Ack()
 	})
