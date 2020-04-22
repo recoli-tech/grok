@@ -7,7 +7,7 @@ import (
 
 	"cloud.google.com/go/pubsub"
 
-	"github.com/raafvargas/grok"
+	"github.com/recoli-tech/grok"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )

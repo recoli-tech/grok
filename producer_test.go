@@ -3,7 +3,7 @@ package grok_test
 import (
 	"testing"
 
-	"github.com/raafvargas/grok"
+	"github.com/recoli-tech/grok"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )

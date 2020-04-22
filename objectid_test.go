@@ -1,11 +1,12 @@
 package grok_test
 
-import "github.com/raafvargas/grok"
-import "testing"
+import (
+	"testing"
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
-
-import "github.com/stretchr/testify/assert"
+	"github.com/recoli-tech/grok"
+	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 func TestObjectIDFromHex(t *testing.T) {
 	objectID := primitive.NewObjectID().Hex()

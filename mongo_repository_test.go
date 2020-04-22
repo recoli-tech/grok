@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/raafvargas/grok"
+	"github.com/recoli-tech/grok"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"go.mongodb.org/mongo-driver/bson/primitive"

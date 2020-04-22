@@ -2,7 +2,7 @@
 version: 2.1
 
 defaults: &defaults
-  working_directory: /go/src/github.com/raafvargas/grok
+  working_directory: /go/src/github.com/recoli-tech/grok
 commands:
   autotag:
     steps:
