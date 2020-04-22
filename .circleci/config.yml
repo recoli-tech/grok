@@ -32,6 +32,9 @@ jobs:
     docker:
     - image: circleci/golang:1.13
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - cb:02:ef:14:9f:6b:61:5e:f0:2c:32:ea:ad:23:b9:26
       - checkout
       - autotag
       - run:
