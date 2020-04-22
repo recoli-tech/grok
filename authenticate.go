@@ -1,6 +1,7 @@
 package grok
 
 import (
+	"context"
 	"net/http"
 	"strings"
 	"time"
@@ -108,6 +109,8 @@ func (a *Auth0Authenticate) setKeys(ctx *gin.Context, claims map[string]interfac
 		}
 
 		ctx.Set(key, value)
+
+		ctx.Request = ctx.Request.WithContext(context.WithValue(ctx.Request.Context(), key, value))
 	}
 }
 
